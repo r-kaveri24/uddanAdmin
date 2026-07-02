@@ -1,4 +1,6 @@
 "use client";
+import HeroSectionContent from "./heroSectionContent";
+
 
 import React, { useState } from "react";
 import { LayoutDashboard, Image, ImagePlay, Users, ChevronDown } from "lucide-react";
@@ -28,13 +30,13 @@ export default function AdminPanel() {
       case "Dashboard":
         return renderBlankPage("Dashboard");
       case "Hero Section":
-        return renderBlankPage("Hero Section");
+        return <HeroSectionContent />;
       case "News & Events":
         return renderBlankPage("News & Events");
       case "Team":
         return renderBlankPage("Team");
       default:
-        return renderBlankPage("Hero Section");
+        return <HeroSectionContent />;
     }
   };
 
