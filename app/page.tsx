@@ -50,7 +50,7 @@ export default function AdminPanel() {
   const renderContent = () => {
     switch (activeTab) {
       case "Dashboard":
-        return renderBlankPage("Dashboard");
+        return <DashboardContent/>;
       case "Hero Section":
         return <HeroSectionContent />;
       case "News & Events":
