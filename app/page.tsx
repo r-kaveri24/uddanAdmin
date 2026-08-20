@@ -8,6 +8,7 @@ import NotificationsContent, {
 
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import NewsContent from "./NewsContent";
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("Hero Section");
@@ -54,7 +55,7 @@ export default function AdminPanel() {
       case "Hero Section":
         return <HeroSectionContent />;
       case "News & Events":
-        return renderBlankPage("News & Events");
+        return <NewsContent/>;
       case "Team":
         return renderBlankPage("Team");
       case "Notifications":
