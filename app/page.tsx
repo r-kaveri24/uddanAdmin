@@ -5,6 +5,7 @@ import NotificationsContent, {
   initialNotifications,
   NotificationItem,
 } from "./NotificationsContent";
+import DashboardContent from "./DashboardContent";
 
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
@@ -15,6 +16,10 @@ export default function AdminPanel() {
   // Notification State Management
   const [notifications, setNotifications] =
     useState<NotificationItem[]>(initialNotifications);
+
+  const handleOpenLogoutModal = () => {
+    window.dispatchEvent(new Event("open-logout-modal"));
+  };
 
   // Calculate unread badge counter
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -128,7 +133,9 @@ export default function AdminPanel() {
 
         {/* Bottom Section: Pinned Log Out Option */}
         <div className="mb-6 border-t border-[#e0ad10] pt-4">
-          <button className="w-full flex items-center gap-3 py-3 px-6 font-semibold text-white hover:bg-[#e0ad10] text-left">
+          <button 
+            onClick={handleOpenLogoutModal}
+            className="w-full flex items-center gap-3 py-3 px-6 font-semibold text-white hover:bg-[#e0ad10] text-left">
             <img
               src="/logout-icon.png"
               alt="Logout"
@@ -191,6 +198,7 @@ export default function AdminPanel() {
             </button>
 
             <button
+              onClick={handleOpenLogoutModal}
               className="w-[30px] h-[30px] flex items-center justify-center hover:opacity-80 transition-opacity"
               title="Logout Quicklink"
             >
