@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bell, ChevronLeft, CheckCircle, Clock } from "lucide-react";
+import { createClient } from "@/lib/supabaseClient"; // Ensure your client path is correct
 
 export interface NotificationItem {
   id: string;
@@ -12,75 +13,130 @@ export interface NotificationItem {
   category?: string;
 }
 
-export const initialNotifications: NotificationItem[] = [
-  {
-    id: "1",
-    title: "New Banner Uploaded",
-    message: "A new hero section banner image was uploaded by Admin.",
-    timestamp: "10 mins ago",
-    isRead: false,
-    category: "Hero Section",
-  },
-  {
-    id: "2",
-    title: "System Update Complete",
-    message: "The backend donation tracking system has been updated successfully.",
-    timestamp: "1 hour ago",
-    isRead: false,
-    category: "System",
-  },
-  {
-    id: "3",
-    title: "New Team Member Added",
-    message: "A new member profile was added to the Truddan Foundation team tab.",
-    timestamp: "Yesterday",
-    isRead: true,
-    category: "Team",
-  },
-  {
-    id: "4",
-    title: "Database Backup Completed",
-    message: "Routine automated database backup completed without errors.",
-    timestamp: "2 days ago",
-    isRead: true,
-    category: "Database",
-  },
-  {
-    id: "5",
-    title: "Event Registered",
-    message: "A new upcoming community drive was published under News & Events.",
-    timestamp: "3 days ago",
-    isRead: true,
-    category: "News & Events",
-  },
-];
-
-interface NotificationsContentProps {
-  notifications: NotificationItem[];
-  onMarkAsRead: (id: string) => void;
-}
-
-export default function NotificationsContent({
-  notifications,
-  onMarkAsRead,
-}: NotificationsContentProps) {
+export default function NotificationsContent() {
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [selectedNotification, setSelectedNotification] =
     useState<NotificationItem | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const supabase = createClient();
+
+  // Helper to format timestamps dynamically
+  const formatTimestamp = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  useEffect(() => {
+    // 1. Fetch initial notifications from database
+    const fetchNotifications = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching notifications:", error);
+      } else if (data) {
+        const mapped = data.map((item: any) => ({
+          id: item.id.toString(),
+          title: item.title,
+          message: item.message,
+          timestamp: item.created_at ? formatTimestamp(item.created_at) : "Just now",
+          isRead: item.is_read ?? false,
+          category: item.category || "General",
+        }));
+        setNotifications(mapped);
+      }
+      setLoading(false);
+    };
+
+    fetchNotifications();
+
+    // 2. Subscribe to Real-time database updates
+    const channel = supabase
+      .channel("realtime-notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+        },
+        (payload) => {
+          const newNotif = payload.new;
+          const newItem: NotificationItem = {
+            id: newNotif.id.toString(),
+            title: newNotif.title,
+            message: newNotif.message,
+            timestamp: newNotif.created_at
+              ? formatTimestamp(newNotif.created_at)
+              : "Just now",
+            isRead: newNotif.is_read ?? false,
+            category: newNotif.category || "General",
+          };
+
+          // Prepend new item to list
+          setNotifications((prev) => [newItem, ...prev]);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+        },
+        (payload) => {
+          const updatedNotif = payload.new;
+          setNotifications((prev) =>
+            prev.map((item) =>
+              item.id === updatedNotif.id.toString()
+                ? { ...item, isRead: updatedNotif.is_read }
+                : item
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    // Clean up channel on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Handle Mark as Read in DB
+  const handleMarkAsRead = async (id: string) => {
+    // Optimistic UI update
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Failed to mark as read in Supabase:", error);
+    }
+  };
 
   const handleNotificationClick = (item: NotificationItem) => {
     if (!item.isRead) {
-      onMarkAsRead(item.id);
+      handleMarkAsRead(item.id);
     }
     setSelectedNotification(item);
   };
 
   // ---------------------------------------------------------------------------
-  // 1. DETAIL VIEW (Matches w-full max-w-5xl exactly)
+  // 1. DETAIL VIEW
   // ---------------------------------------------------------------------------
   if (selectedNotification) {
     return (
       <div className="w-full max-w-5xl bg-white rounded-xl border border-gray-100 p-8 shadow-xs min-h-[500px]">
-        {/* Back Button */}
         <button
           onClick={() => setSelectedNotification(null)}
           className="flex items-center gap-2 text-sm text-[#FB7820] font-semibold hover:underline mb-6 cursor-pointer"
@@ -88,7 +144,6 @@ export default function NotificationsContent({
           <ChevronLeft className="w-4 h-4" /> Back to Notifications
         </button>
 
-        {/* Header Metadata */}
         <div className="border-b border-gray-100 pb-4 mb-6">
           <div className="flex items-center gap-3 mb-2">
             <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full">
@@ -104,7 +159,6 @@ export default function NotificationsContent({
           </h2>
         </div>
 
-        {/* Main Body */}
         <div className="text-gray-600 leading-relaxed text-base">
           <p>{selectedNotification.message}</p>
         </div>
@@ -113,7 +167,7 @@ export default function NotificationsContent({
   }
 
   // ---------------------------------------------------------------------------
-  // 2. LIST VIEW (Matches w-full max-w-5xl exactly)
+  // 2. LIST VIEW
   // ---------------------------------------------------------------------------
   return (
     <div className="w-full max-w-5xl bg-white rounded-xl border border-gray-100 p-8 shadow-xs min-h-[500px] flex flex-col">
@@ -129,9 +183,10 @@ export default function NotificationsContent({
         </span>
       </div>
 
-      {/* Scrollable Container */}
       <div className="flex-1 overflow-y-auto pr-2 space-y-3 max-h-[500px]">
-        {notifications.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 text-gray-400">Loading notifications...</div>
+        ) : notifications.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             No notifications available.
           </div>

@@ -82,8 +82,12 @@ export default function HeroSectionContent() {
       setSelectedFile(null);
       setPreviewUrl(null);
       alert("Asset uploaded successfully!");
-    } catch (err: any) {
-      alert(err.message || "Upload failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+    console.error("Error:", err.message);
+  } else {
+    console.error("Unknown error:", err);
+  }
     } finally {
       setLoading(false);
     }

@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Users, IndianRupee, MessageSquareQuote, Loader2, LogOut  } from "lucide-react";
-import { supabase } from "../backend/supabase"; // Import your Supabase client
+import { supabase } from "../lib/supabase"; // Import your Supabase client
 
 type TimeFilter = "daily" | "monthly" | "yearly";
 
@@ -39,7 +39,7 @@ export default function DashboardContent() {
     try {
       // 1. Calculate Date Range based on selected Filter
       const now = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       if (filter === "daily") {
         startDate.setDate(now.getDate() - 7); // Last 7 days
@@ -151,14 +151,7 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* GLOBAL LOGOUT TRIGGER BUTTON */}
-    <button
-      onClick={() => window.dispatchEvent(new Event('open-logout-modal'))}
-      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors cursor-pointer border border-red-200"
-    >
-      <LogOut className="w-4 h-4" />
-      Log Out
-    </button>
+    
 
       {/* LINE GRAPH SECTION */}
       <div className="bg-[#FAF9F5] p-6 rounded-2xl border border-gray-100 relative">
