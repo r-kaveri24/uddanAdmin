@@ -2,34 +2,58 @@
 
 import HeroSectionContent from "./heroSectionContent";
 import ProfileContent from "./ProfileContent";
-import NotificationsContent, {
-  initialNotifications,
-  NotificationItem,
-} from "./NotificationsContent";
+import NotificationsContent from "./NotificationsContent";
 import DashboardContent from "./DashboardContent";
-
-import React, { useState } from "react";
-import { ChevronDown } from "lucide-react";
 import NewsContent from "./NewsContent";
+
+import React, { useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
+import { createClient } from "@/lib/supabaseClient";
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("Hero Section");
-  
-  // Notification State Management
-  const [notifications, setNotifications] =
-    useState<NotificationItem[]>(initialNotifications);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  const supabase = createClient();
+
+  // Fetch initial unread count & subscribe to real-time notification changes for the badge
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("is_read", false);
+
+      if (!error && count !== null) {
+        setUnreadCount(count);
+      }
+    };
+
+    fetchUnreadCount();
+
+    const channel = supabase
+      .channel("badge-notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+        },
+        () => {
+          // Refresh badge count on any insert/update/delete
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleOpenLogoutModal = () => {
     window.dispatchEvent(new Event("open-logout-modal"));
-  };
-
-  // Calculate unread badge counter
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  const handleMarkAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isRead: true } : item))
-    );
   };
 
   const navItems = [
@@ -39,7 +63,6 @@ export default function AdminPanel() {
     { name: "Team" },
   ];
 
-  // Dynamically renders completely clean, blank pages with headings
   const renderBlankPage = (title: string) => {
     return (
       <div className="w-full max-w-5xl bg-white rounded-xl border border-gray-100 p-8 shadow-xs min-h-[500px]">
@@ -57,22 +80,17 @@ export default function AdminPanel() {
   const renderContent = () => {
     switch (activeTab) {
       case "Dashboard":
-        return <DashboardContent/>;
+        return <DashboardContent />;
       case "Hero Section":
         return <HeroSectionContent />;
-      case "Profile": 
+      case "Profile":
         return <ProfileContent />;
       case "News & Events":
-        return <NewsContent/>;
+        return <NewsContent />;
       case "Team":
         return renderBlankPage("Team");
       case "Notifications":
-        return (
-          <NotificationsContent
-            notifications={notifications}
-            onMarkAsRead={handleMarkAsRead}
-          />
-        );
+        return <NotificationsContent />;
       default:
         return <HeroSectionContent />;
     }
@@ -137,9 +155,10 @@ export default function AdminPanel() {
 
         {/* Bottom Section: Pinned Log Out Option */}
         <div className="mb-6 border-t border-[#e0ad10] pt-4">
-          <button 
+          <button
             onClick={handleOpenLogoutModal}
-            className="w-full flex items-center gap-3 py-3 px-6 font-semibold text-white hover:bg-[#e0ad10] text-left">
+            className="w-full flex items-center gap-3 py-3 px-6 font-semibold text-white hover:bg-[#e0ad10] text-left"
+          >
             <img
               src="/logout-icon.png"
               alt="Logout"
@@ -194,7 +213,7 @@ export default function AdminPanel() {
                     "https://via.placeholder.com/30?text=I";
                 }}
               />
-              {/* Unread Badge Counter */}
+              {/* Real-time Unread Badge Counter */}
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
                   {unreadCount}
