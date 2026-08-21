@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Eye, Trash2, UploadCloud, FileImage,X } from "lucide-react";
-import { supabase } from "../backend/supabase"; // Adjust this import path based on where you put step 2
+import { supabase } from "../lib/supabase"; // Adjust this import path based on where you put step 2
 
 interface UploadedFile {
   id: string;
