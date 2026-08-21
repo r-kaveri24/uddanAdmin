@@ -19,13 +19,23 @@ export default function LogoutModalProvider({
     return () => window.removeEventListener('open-logout-modal', handleOpenModal);
   }, []);
 
+  const handleConfirmLogout = async () => {
+    // 1. Immediately close the modal state
+    setShowLogoutModal(false);
+
+    // 2. Perform the logout action
+    if (typeof logout === 'function') {
+      await logout();
+    }
+  };
+
   return (
     <>
       {children}
       <LogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
-        onConfirm={logout}
+        onConfirm={handleConfirmLogout}
       />
     </>
   );
