@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Bell, ChevronLeft, CheckCircle, Clock } from "lucide-react";
-import { createClient } from "@/lib/supabaseClient"; // Ensure your client path is correct
 
 export interface NotificationItem {
   id: string;
@@ -132,7 +131,7 @@ export default function NotificationsContent() {
   };
 
   // ---------------------------------------------------------------------------
-  // 1. DETAIL VIEW
+  // 1. DETAIL VIEW (Matches w-full max-w-5xl exactly)
   // ---------------------------------------------------------------------------
   if (selectedNotification) {
     return (
