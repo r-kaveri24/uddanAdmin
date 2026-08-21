@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabase";
 import HeroSectionContent from "./heroSectionContent";
 import ProfileContent from "./ProfileContent";
 import NotificationsContent, {
@@ -10,40 +8,20 @@ import NotificationsContent, {
 } from "./NotificationsContent";
 import DashboardContent from "./DashboardContent";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import NewsContent from "./NewsContent";
 
 export default function AdminPanel() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("Dashboard");
-
-  useEffect(() => {
-  const checkAuth = async () => {
-   
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      router.replace("/login"); 
-    } else {
-      setLoading(false); 
-    }
-  };
-
-  checkAuth();
-}, [router]);
+  const [activeTab, setActiveTab] = useState("Hero Section");
   
   // Notification State Management
   const [notifications, setNotifications] =
     useState<NotificationItem[]>(initialNotifications);
 
- const handleLogout = async () => {
-  await supabase.auth.signOut();
-  router.replace("/login");
-};
+  const handleOpenLogoutModal = () => {
+    window.dispatchEvent(new Event("open-logout-modal"));
+  };
 
   // Calculate unread badge counter
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -61,13 +39,6 @@ export default function AdminPanel() {
     { name: "Team" },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FDFBF7]">
-        <p className="text-lg font-semibold text-gray-700">Loading...</p>
-      </div>
-    );
-  }
   // Dynamically renders completely clean, blank pages with headings
   const renderBlankPage = (title: string) => {
     return (
@@ -103,16 +74,10 @@ export default function AdminPanel() {
           />
         );
       default:
-        return <DashboardContent />;
+        return <HeroSectionContent />;
     }
   };
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FDFBF7]">
-        <p className="text-lg font-semibold text-gray-700">Loading...</p>
-      </div>
-    );
-  }
+
   return (
     <div className="flex h-screen bg-[#FDFBF7] font-['Lato'] overflow-hidden">
       {/* LEFT SIDEBAR - Strict Full Height Layout */}
@@ -173,7 +138,7 @@ export default function AdminPanel() {
         {/* Bottom Section: Pinned Log Out Option */}
         <div className="mb-6 border-t border-[#e0ad10] pt-4">
           <button 
-            onClick={handleLogout}
+            onClick={handleOpenLogoutModal}
             className="w-full flex items-center gap-3 py-3 px-6 font-semibold text-white hover:bg-[#e0ad10] text-left">
             <img
               src="/logout-icon.png"
@@ -238,7 +203,7 @@ export default function AdminPanel() {
             </button>
 
             <button
-              onClick={handleLogout}
+              onClick={handleOpenLogoutModal}
               className="w-[30px] h-[30px] flex items-center justify-center hover:opacity-80 transition-opacity"
               title="Logout Quicklink"
             >
@@ -260,7 +225,6 @@ export default function AdminPanel() {
           {renderContent()}
         </main>
       </div>
->>>>>>> Stashed changes
     </div>
   );
 }

@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import { supabase } from "../../lib/supabase";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -29,8 +27,9 @@ export default function LoginPage() {
       return;
     }
 
-    // Navigates to the main dashboard after successful login
-    router.push("/");
+    alert("Login Successful!");
+    console.log("Logged in User:", data.user);
+
   };
 
   return (
@@ -41,6 +40,7 @@ export default function LoginPage() {
       }}
     >
       <div className="w-full max-w-md rounded-3xl border border-white/30 bg-white/20 p-8 shadow-2xl backdrop-blur-lg">
+
         <div className="mb-6 flex justify-center">
           <div className="rounded-full bg-white p-3 shadow-lg">
             <Image
@@ -58,6 +58,7 @@ export default function LoginPage() {
         </h1>
 
         <form onSubmit={handleLogin} className="space-y-5">
+
           <div>
             <input
               type="email"
@@ -81,14 +82,22 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-between text-sm text-white">
+
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="h-4 w-4 rounded" />
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded"
+              />
               Remember Me
             </label>
 
-            <button type="button" className="hover:underline">
+            <button
+              type="button"
+              className="hover:underline"
+            >
               Forgot Password?
             </button>
+
           </div>
 
           <button
@@ -98,6 +107,7 @@ export default function LoginPage() {
           >
             {loading ? "Logging in..." : "Log In"}
           </button>
+
         </form>
       </div>
     </div>
