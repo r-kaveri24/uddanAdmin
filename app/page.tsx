@@ -1,6 +1,7 @@
 "use client";
 
 import HeroSectionContent from "./heroSectionContent";
+import ProfileContent from "./ProfileContent";
 import NotificationsContent, {
   initialNotifications,
   NotificationItem,
@@ -58,6 +59,8 @@ export default function AdminPanel() {
         return <DashboardContent/>;
       case "Hero Section":
         return <HeroSectionContent />;
+      case "Profile": 
+        return <ProfileContent />;
       case "News & Events":
         return renderBlankPage("News & Events");
       case "Team":
@@ -160,6 +163,7 @@ export default function AdminPanel() {
           {/* Custom Extracted Image Utility Icons (30x30 Dimensions) */}
           <div className="flex items-center gap-[21px] h-[30px]">
             <button
+              onClick={() => setActiveTab("Profile")}
               className="w-[30px] h-[30px] flex items-center justify-center hover:opacity-80 transition-opacity"
               title="Profile"
             >
