@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Users, IndianRupee, MessageSquareQuote, Loader2, LogOut  } from "lucide-react";
+import { Users, IndianRupee, MessageSquareQuote, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabase"; // Import your Supabase client
 
 type TimeFilter = "daily" | "monthly" | "yearly";
