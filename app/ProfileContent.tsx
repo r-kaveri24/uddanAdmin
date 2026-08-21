@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { Edit2, ArrowLeft, Camera, User } from "lucide-react";
 
 interface ProfileData {
@@ -19,8 +19,6 @@ interface ProfileData {
 export default function ProfileContent() {
     const [isEditing, setIsEditing] = useState(false);
 
-    // Reference for hidden file input
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Active saved profile state
     const [profile, setProfile] = useState<ProfileData>({

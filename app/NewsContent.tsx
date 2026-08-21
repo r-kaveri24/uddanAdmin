@@ -128,16 +128,6 @@ export default function NewsContent() {
     event.target.value = "";
   };
 
-  const handleRemoveImage = (
-    indexToRemove: number
-  ) => {
-    setImages((previousImages) =>
-      previousImages.filter(
-        (_, index) =>
-          index !== indexToRemove
-      )
-    );
-  };
   const resetForm = () => {
     setHeading("");
     setDescription("");

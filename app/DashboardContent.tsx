@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Users, IndianRupee, MessageSquareQuote, Loader2, LogOut  } from "lucide-react";
-import { supabase } from "../backend/supabase"; // Import your Supabase client
+import { supabase } from "../lib/supabase"; // Import your Supabase client
 
 type TimeFilter = "daily" | "monthly" | "yearly";
 
@@ -39,7 +39,7 @@ export default function DashboardContent() {
     try {
       // 1. Calculate Date Range based on selected Filter
       const now = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       if (filter === "daily") {
         startDate.setDate(now.getDate() - 7); // Last 7 days
